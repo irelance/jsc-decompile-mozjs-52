@@ -1,7 +1,4 @@
 <?php
-include './Kind.php';
-include './Xdr.php';
-
 /**
  * Created by PhpStorm.
  * User: irelance
@@ -314,6 +311,3 @@ class Decompile
         echo '---------------------------------------', $this->CRLF;
     }
 }
-
-$decompile = new Decompile($argv[1]);
-$decompile->run();
