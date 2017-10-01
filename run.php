@@ -8,6 +8,7 @@
 
 include './Kind.php';
 include './Xdr.php';
+include './Script.php';
 include './Decompile.php';
 
 $decompile = new Decompile($argv[1]);

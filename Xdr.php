@@ -44,90 +44,77 @@ trait Xdr
         return $result;
     }
 
-    public function XDRBindingName()
-    {
-        $u8 = $this->todec(1);
-        $hasAtom = $u8 >> 1;
-        if ($hasAtom){
-            //XDRAtom
-            $lengthAndEncoding = $this->todec();
-            $hasLatin1Chars = $lengthAndEncoding & 1;
-            $length = $lengthAndEncoding >> 1;
-            $atom = $this->getChars($hasLatin1Chars, $length);
-            echo $atom, $this->CRLF;
-        }
-    }
-
     public function XDRSizedBindingNames()
     {
         $length = $this->todec();
+        $result = [];
         for ($i = 0; $i < $length; $i++) {
-            $this->XDRBindingName();
+            $u8 = $this->todec(1);
+            $hasAtom = $u8 >> 1;
+            if ($hasAtom) {
+                $result[] = $this->XDRAtom();
+            }
         }
+        return $result;
     }
 
     public function xdrNot()
     {
+        return [];
     }
 
     public function xdrWith()
     {
+        return [];
     }
 
     public function xdrLexical()
     {
-        $this->XDRSizedBindingNames();
-        $constStart = $this->todec();
-        echo 'constStart:', $constStart, $this->CRLF;
-        $firstFrameSlot = $this->todec();
-        echo 'firstFrameSlot:', $firstFrameSlot, $this->CRLF;
-        $nextFrameSlot = $this->todec();
-        echo 'nextFrameSlot:', $nextFrameSlot, $this->CRLF;
+        return [
+            'bindingNames' => $this->XDRSizedBindingNames(),
+            'constStart' => $this->todec(),
+            'firstFrameSlot' => $this->todec(),
+            'nextFrameSlot' => $this->todec()
+        ];
     }
 
     public function xdrFunction()
     {
-        $this->XDRSizedBindingNames();
-        $needsEnvironment = $this->todec(1);
-        echo 'needsEnvironment:', $needsEnvironment, $this->CRLF;
-        $hasParameterExprs = $this->todec(1);
-        echo 'hasParameterExprs:', $hasParameterExprs, $this->CRLF;
-        //data
-        $nonPositionalFormalStart = $this->todec(2);
-        echo 'nonPositionalFormalStart:', $nonPositionalFormalStart, $this->CRLF;
-        $varStart = $this->todec(2);
-        echo 'varStart:', $varStart, $this->CRLF;
-        $nextFrameSlot = $this->todec();
-        echo 'nextFrameSlot:', $nextFrameSlot, $this->CRLF;
+        return [
+            'bindingNames' => $this->XDRSizedBindingNames(),
+            'needsEnvironment' => $this->todec(1),
+            'hasParameterExprs' => $this->todec(1),
+            'nonPositionalFormalStart' => $this->todec(2),
+            'varStart' => $this->todec(2),
+            'nextFrameSlot' => $this->todec(),
+        ];
     }
 
     public function xdrVar()
     {
-        $this->XDRSizedBindingNames();
-        $needsEnvironment = $this->todec(1);
-        echo 'needsEnvironment:', $needsEnvironment, $this->CRLF;
-        $firstFrameSlot = $this->todec();
-        echo 'firstFrameSlot:', $firstFrameSlot, $this->CRLF;
-        $nextFrameSlot = $this->todec();
-        echo 'nextFrameSlot:', $nextFrameSlot, $this->CRLF;
+        return [
+            'bindingNames' => $this->XDRSizedBindingNames(),
+            'needsEnvironment' => $this->todec(1),
+            'firstFrameSlot' => $this->todec(),
+            'nextFrameSlot' => $this->todec()
+        ];
     }
 
     public function xdrGlobal()
     {
-        $this->XDRSizedBindingNames();
-        //data
-        $letStart = $this->todec();
-        echo 'letStart:', $letStart, $this->CRLF;
-        $constStart = $this->todec();
-        echo 'constStart:', $constStart, $this->CRLF;
+        return [
+            'bindingNames' => $this->XDRSizedBindingNames(),
+            'letStart' => $this->todec(),
+            'constStart' => $this->todec(),
+        ];
     }
 
     public function xdrEval()
     {
-        $this->XDRSizedBindingNames();
-        //binding name
-        $length = $this->todec();
-        echo 'length:', $length, $this->CRLF;
+        return [
+            'bindingNames' => $this->XDRSizedBindingNames(),
+            'length' => $this->todec(),
+        ];
     }
 
 
@@ -149,10 +136,12 @@ trait Xdr
 
     public function xdrCK_Not()
     {
+        return [];
     }
 
     public function xdrCK_RegexpObject()
     {
+        return [];
     }
 
     public function XDRLazyScript()
@@ -163,9 +152,9 @@ trait Xdr
         $lineno = $this->todec();
         $column = $this->todec();
         $packedFields = $this->todec(8);
-        //XDRLazyClosedOverBindings for 0 -> lazy->numClosedOverBindings()
+        //todo XDRLazyClosedOverBindings for 0 -> lazy->numClosedOverBindings()
         $endOfScopeSentinel = $this->todec(1);
-        //for 0 -> lazy->numInnerFunctions() XDRInterpretedFunction
+        //todo for 0 -> lazy->numInnerFunctions() XDRInterpretedFunction
         $this->XDRInterpretedFunction();
     }
 
@@ -190,22 +179,24 @@ trait Xdr
         return $atom;
     }
 
+    public function XDRAtom()
+    {
+        $lengthAndEncoding = $this->todec();
+        $hasLatin1Chars = $lengthAndEncoding & 1;
+        $length = $lengthAndEncoding >> 1;
+        return $this->getChars($hasLatin1Chars, $length);
+    }
+
     public function XDRInterpretedFunction()
     {
         $firstword = $this->todec();
         if ($firstword & Kind::_FirstWordFlag['HasAtom']) {
-            //XDRAtom
-            $lengthAndEncoding = $this->todec();
-            $hasLatin1Chars = $lengthAndEncoding & 1;
-            $length = $lengthAndEncoding >> 1;
-            $atom = $this->getChars($hasLatin1Chars, $length);
-            echo $atom, $this->CRLF;
+            $this->XDRAtom();
         }
         $flagsword = $this->todec();
         if ($firstword & Kind::_FirstWordFlag['IsLazy']) {
             $this->XDRLazyScript();
         } else {
-            //XDRScript
             $this->XDRScript();
         }
     }
@@ -213,11 +204,15 @@ trait Xdr
     public function xdrCK_JSFunction()
     {
         $funEnclosingScopeIndex = $this->todec();
-        echo 'funEnclosingScopeIndex:', $funEnclosingScopeIndex, $this->CRLF;
-        $this->XDRInterpretedFunction();
+        $this->XDRInterpretedFunction();//todo get the information
+        return [
+            'funEnclosingScopeIndex' => $funEnclosingScopeIndex,
+        ];
     }
 
     public function xdrCK_JSObject()
     {
+        //todo
+        return [];
     }
 }
