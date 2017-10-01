@@ -212,8 +212,6 @@ class Decompile
 
     public function parserObjects()
     {
-        //todo
-        $this->parseIndex+=10;
         if ($this->head['objects_len']) {
             echo '----------------Objects----------------', $this->CRLF;
             for ($i = 0; $i < $this->head['objects_len']; $i++) {

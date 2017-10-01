@@ -44,6 +44,28 @@ trait Xdr
         return $result;
     }
 
+    public function XDRBindingName()
+    {
+        $u8 = $this->todec(1);
+        $hasAtom = $u8 >> 1;
+        if ($hasAtom){
+            //XDRAtom
+            $lengthAndEncoding = $this->todec();
+            $hasLatin1Chars = $lengthAndEncoding & 1;
+            $length = $lengthAndEncoding >> 1;
+            $atom = $this->getChars($hasLatin1Chars, $length);
+            echo $atom, $this->CRLF;
+        }
+    }
+
+    public function XDRSizedBindingNames()
+    {
+        $length = $this->todec();
+        for ($i = 0; $i < $length; $i++) {
+            $this->XDRBindingName();
+        }
+    }
+
     public function xdrNot()
     {
     }
@@ -54,6 +76,7 @@ trait Xdr
 
     public function xdrLexical()
     {
+        $this->XDRSizedBindingNames();
         $constStart = $this->todec();
         echo 'constStart:', $constStart, $this->CRLF;
         $firstFrameSlot = $this->todec();
@@ -64,6 +87,7 @@ trait Xdr
 
     public function xdrFunction()
     {
+        $this->XDRSizedBindingNames();
         $needsEnvironment = $this->todec(1);
         echo 'needsEnvironment:', $needsEnvironment, $this->CRLF;
         $hasParameterExprs = $this->todec(1);
@@ -79,6 +103,7 @@ trait Xdr
 
     public function xdrVar()
     {
+        $this->XDRSizedBindingNames();
         $needsEnvironment = $this->todec(1);
         echo 'needsEnvironment:', $needsEnvironment, $this->CRLF;
         $firstFrameSlot = $this->todec();
@@ -89,6 +114,7 @@ trait Xdr
 
     public function xdrGlobal()
     {
+        $this->XDRSizedBindingNames();
         //data
         $letStart = $this->todec();
         echo 'letStart:', $letStart, $this->CRLF;
@@ -98,6 +124,7 @@ trait Xdr
 
     public function xdrEval()
     {
+        $this->XDRSizedBindingNames();
         //binding name
         $length = $this->todec();
         echo 'length:', $length, $this->CRLF;
@@ -152,12 +179,13 @@ trait Xdr
         return $atom;
     }
 
-    public function getChars($hasLatin1Chars,$length){
+    public function getChars($hasLatin1Chars, $length)
+    {
         if ($hasLatin1Chars) {
             $atom = $this->getLatin1Chars($length);
         } else {
             //todo 2byte char
-            $atom='';
+            $atom = '';
         }
         return $atom;
     }
