@@ -12,6 +12,7 @@ class Script
     protected $operations = [];
     protected $nodes = [];
     protected $atoms = [];
+    protected $consts = [];
     protected $scopes = [];
     protected $objects = [];
     protected $tryNotes = [];
@@ -41,6 +42,11 @@ class Script
     public function addAtom($atom)
     {
         $this->atoms[] = $atom;
+    }
+
+    public function addConst($const)
+    {
+        $this->consts[] = $const;
     }
 
     public function addScope($scopeKind, $enclosingScopeIndex, array $extra)
@@ -78,8 +84,18 @@ class Script
         return $this->summaries[$key];
     }
 
+    public function getSummaries()
+    {
+        return $this->summaries;
+    }
+
     public function getOperations()
     {
         return $this->operations;
+    }
+
+    public function getAtoms()
+    {
+        return $this->atoms;
     }
 }

@@ -141,7 +141,10 @@ trait Xdr
 
     public function xdrCK_RegexpObject()
     {
-        return [];
+        return [
+            'regexp' => $this->XDRAtom(),
+            'flagsword' => $this->todec(),
+        ];
     }
 
     public function XDRLazyScript()
@@ -168,13 +171,28 @@ trait Xdr
         return $atom;
     }
 
+    public function getTwoByteChar()
+    {
+        $char = '\u' . dechex($this->bytecodes[$this->parseIndex + 1]) . dechex($this->bytecodes[$this->parseIndex]);
+        $this->parseIndex += 2;
+        return $char;
+    }
+
+    public function getTwoByteChars($length)
+    {
+        $atom = '';
+        for ($i = 0; $i < $length; $i++) {
+            $atom .= $this->getTwoByteChar();
+        }
+        return json_decode('"' . $atom . '"');
+    }
+
     public function getChars($hasLatin1Chars, $length)
     {
         if ($hasLatin1Chars) {
             $atom = $this->getLatin1Chars($length);
         } else {
-            //todo 2byte char
-            $atom = '';
+            $atom = $this->getTwoByteChars($length);
         }
         return $atom;
     }
@@ -212,7 +230,62 @@ trait Xdr
 
     public function xdrCK_JSObject()
     {
-        //todo
+        $isArray = $this->todec();
+        if ($isArray) {
+            $initialized = $this->todec();
+            for ($i = 0; $i < $initialized; $i++) {
+                $val = $this->xdrConst();
+            }
+            $copyOnWrite = $this->todec();
+        } else {
+            $nproperties = $this->todec();
+            for ($i = 0; $i < $nproperties; $i++) {
+                $key = $this->xdrConst();
+                $val = $this->xdrConst();
+            }
+            $isSingleton = $this->todec();
+        }
         return [];
+    }
+
+    public function xdrConst()
+    {
+        $const = [
+            'type' => $this->todec(),
+        ];
+        switch ($const['type']) {
+            case 0:
+                $const['value'] = $this->todec();
+                break;
+            case 1:
+                $const['value'] = $this->todec(8);
+                break;
+            case 2:
+                $const['value'] = $this->XDRAtom();
+                break;
+            case 3:
+                $const['value'] = true;
+                break;
+            case 4:
+                $const['value'] = false;
+                break;
+            case 5:
+                $const['value'] = null;
+                break;
+            case 6:
+                $object = $this->xdrCK_JSObject();
+                $const['value'] = "__OBJECT__";
+                break;
+            case 7:
+                $const['value'] = "__VOID__";
+                break;
+            case 8:
+                $const['value'] = "__HOLE__";
+                break;
+            default:
+                $const['value'] = "__ERROR__";
+                break;
+        }
+        return $const;
     }
 }

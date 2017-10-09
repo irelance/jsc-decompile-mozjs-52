@@ -25,13 +25,25 @@ class Kind
         'Module'
     ];
 
+    const _ConstTag = [
+        'SCRIPT_INT',
+        'SCRIPT_DOUBLE',
+        'SCRIPT_ATOM',
+        'SCRIPT_TRUE',
+        'SCRIPT_FALSE',
+        'SCRIPT_NULL',
+        'SCRIPT_OBJECT',
+        'SCRIPT_VOID',
+        'SCRIPT_HOLE',
+    ];
+
     const _Class = [
-        'CK_RegexpObject',
+        'CK_RegexpObject',//正则表达式
         'CK_JSFunction',
         'CK_JSObject'
     ];
 
-    const _ScriptBits=[
+    const _ScriptBits = [
         'NoScriptRval',
         'Strict',
         'ContainsDynamicNameAccess',
@@ -59,10 +71,10 @@ class Kind
         'IsDefaultClassConstructor',
     ];
 
-    const _FirstWordFlag =[
-        'HasAtom'             => 0x1,
-        'IsStarGenerator'     => 0x2,
-        'IsLazy'              => 0x4,
-        'HasSingletonType'    => 0x8
+    const _FirstWordFlag = [
+        'HasAtom' => 0x1,
+        'IsStarGenerator' => 0x2,
+        'IsLazy' => 0x4,
+        'HasSingletonType' => 0x8
     ];
 }

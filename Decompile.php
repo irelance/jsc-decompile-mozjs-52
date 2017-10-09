@@ -147,6 +147,15 @@ class Decompile
         }
     }
 
+    public function parseConsts(Script $script)
+    {
+        if ($nconsts = $script->getSummary('consts_len')) {
+            for ($i = 0; $i < $nconsts; $i++) {
+                $script->addConst($this->xdrConst());
+            }
+        }
+    }
+
     public function parserScope(Script $script)
     {
         $scopeKind = Kind::_Scope[$this->todec()];
@@ -242,15 +251,42 @@ class Decompile
         }
     }
 
+    public function printAtoms()
+    {
+        /** @var Script $script * */
+        foreach ($this->scripts as $index => $script) {
+            $atoms = $script->getAtoms();
+            echo '------------------' . $index . '------------------', $this->CRLF;
+            echo implode(' ', $atoms), $this->CRLF;
+            echo '----------------------------------------', $this->CRLF;
+        }
+    }
+
+    public function printSummaries()
+    {
+        /** @var Script $script * */
+        foreach ($this->scripts as $index => $script) {
+            $summaries = $script->getSummaries();
+            echo '------------------' . $index . '------------------', $this->CRLF;
+            foreach ($summaries as $key => $val) {
+                echo $key, ': ', $val, $this->CRLF;
+            }
+            echo '----------------------------------------', $this->CRLF;
+        }
+    }
+
     public function run()
     {
-        $this->parserVersion();
-        $this->XDRScript();
-        echo '----------------ByteCode---------------', $this->CRLF;
-        echo 'file size :', $this->bytecodeLength, $this->CRLF;
-        echo 'parse size :', $this->parseIndex, $this->CRLF;
-        echo '---------------------------------------', $this->CRLF;
-        $this->printOpcodes();
+        try {
+            $this->parserVersion();
+            $this->XDRScript();
+            echo '----------------ByteCode---------------', $this->CRLF;
+            echo 'file size :', $this->bytecodeLength, $this->CRLF;
+            echo 'parse size :', $this->parseIndex, $this->CRLF;
+            echo '---------------------------------------', $this->CRLF;
+        } catch (\Exception $e) {
+            echo $e;
+        }
     }
 
     public function XDRScript()
@@ -261,6 +297,7 @@ class Decompile
         $this->parserScript($script);
         $this->parserSrcNodes($script);
         $this->parserAtoms($script);
+        $this->parseConsts($script);
         $this->parserScopes($script);
         $this->parserObjects($script);
         $this->parserTryNotes($script);
