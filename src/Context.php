@@ -6,7 +6,9 @@
  * Date: 2017/10/1
  * Time: 下午3:25
  */
-class Script
+namespace Irelance\Mozjs52;
+
+class Context
 {
     protected $summaries = [];
     protected $operations = [];

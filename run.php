@@ -5,12 +5,9 @@
  * Date: 2017/10/1
  * Time: 上午10:47
  */
+include 'vendor/autoload.php';
 
-include './Kind.php';
-include './Xdr.php';
-include './Script.php';
-include './Decompile.php';
 
-$decompile = new Decompile($argv[1]);
+$decompile = new Irelance\Mozjs52\Decompile($argv[1]);
 $decompile->run();
 
